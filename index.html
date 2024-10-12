@@ -900,6 +900,7 @@
         this.countdownElement.style.left = '10px';
         this.countdownElement.style.color = 'white';
         this.countdownElement.style.fontSize = '24px';
+        this.countdownElement.style.zIndex = '1000';
         document.body.appendChild(this.countdownElement);
 
         this.scoreElement = document.createElement('div');
@@ -908,6 +909,7 @@
         this.scoreElement.style.right = '10px';
         this.scoreElement.style.color = 'white';
         this.scoreElement.style.fontSize = '24px';
+        this.scoreElement.style.zIndex = '1000'; 
         document.body.appendChild(this.scoreElement);
 
         this.restartButton = document.createElement('button');
