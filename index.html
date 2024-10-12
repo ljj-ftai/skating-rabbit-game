@@ -234,6 +234,9 @@
           this.score = 0;
           this.gameOver = false;
           this.loadAssets();
+          this.level = 1;
+          this.levelGoals = [3, 35]; // 第一关3分,第二关35分
+          this.gameWon = false;
         }
 
         loadAssets() {
@@ -893,6 +896,23 @@
           this.floor.material.vertexShader = vertexShader;
           this.floor.material.fragmentShader = fragmentShader;
         }
+
+
+        startNextLevel() {
+          this.level++;
+          alert(`恭喜通过第一关!现在进入第二关,目标分数: ${this.levelGoals[1]}`);
+          this.resetGameState();
+          this.startCountdown();
+        }
+
+        winGame() {
+          this.gameWon = true;
+          this.gameOver = true;
+          alert('恭喜你,通过了所有关卡!');
+          this.restartButton.style.display = 'block';
+        }
+
+
         createUIElements() {
         this.countdownElement = document.createElement('div');
         this.countdownElement.style.position = 'absolute';
@@ -924,31 +944,39 @@
         }
 
         startCountdown() {
-        this.countdownTime = 60;
-        const countdownInterval = setInterval(() => {
+          this.countdownTime = 60;
+          const countdownInterval = setInterval(() => {
             this.countdownTime--;
-            this.countdownElement.textContent = `时间: ${this.countdownTime}`;
+            this.countdownElement.textContent = `关卡 ${this.level} - 时间: ${this.countdownTime}`;
             
             if (this.countdownTime <= 0) {
-            clearInterval(countdownInterval);
-            this.endGame();
+              clearInterval(countdownInterval);
+              this.endGame();
             }
-        }, 1000);
+          }, 1000);
         }
 
         endGame() {
-        this.gameOver = true;
-        alert(`游戏结束! 您的得分是: ${this.score}`);
-        this.restartButton.style.display = 'block';
+          this.gameOver = true;
+          if (!this.gameWon) {
+            if (this.level === 1 && this.score < this.levelGoals[0]) {
+              alert(`游戏失败! 您的得分是: ${this.score}, 未达到第一关目标分数: ${this.levelGoals[0]}`);
+            } else if (this.level === 2 && this.score < this.levelGoals[1]) {
+              alert(`游戏失败! 您的得分是: ${this.score}, 未达到第二关目标分数: ${this.levelGoals[1]}`);
+            }
+          }
+          this.restartButton.style.display = 'block';
         }
 
         restartGame() {
-        this.gameOver = false;
-        this.score = 0;
-        this.updateScore();
-        this.restartButton.style.display = 'none';
-        this.resetGameState();
-        this.startCountdown();
+          this.gameOver = false;
+          this.gameWon = false;
+          this.level = 1;
+          this.score = 0;
+          this.updateScore();
+          this.restartButton.style.display = 'none';
+          this.resetGameState();
+          this.startCountdown();
         }
 
         resetGameState() {
@@ -963,10 +991,17 @@
         }
 
         updateScore() {
-        this.score++;
-        this.scoreElement.textContent = `得分: ${this.score}`;
-        }
+          this.score++;
+          this.scoreElement.textContent = `得分: ${this.score}`;
+  
+          if (this.score === this.levelGoals[this.level - 1]) {
+            if (this.level === 1) {
+              this.startNextLevel();
+            } else if (this.level === 2) {
+              this.winGame();
+            }
           }
+       }
 
       
       class BufferSim {
