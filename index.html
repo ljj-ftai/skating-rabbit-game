@@ -230,6 +230,9 @@
           this.winWidth = window.innerWidth;
           this.winHeight = window.innerHeight;
           this.gltfFile = 'https://assets.codepen.io/264161/rabbit6.glb';
+          this.countdownTime = 60;
+          this.score = 0;
+          this.gameOver = false;
           this.loadAssets();
         }
 
@@ -295,6 +298,9 @@
 
           // Render loop
           this.draw();
+          this.createUIElements();
+          this.startCountdown();
+          this.updateScore();
         }
 
         processModel() {
@@ -553,6 +559,7 @@
         }
 
         updateGame() {
+          if (this.gameOver) return;
           this.dt = Math.min(this.clock.getDelta(), 0.3);
           this.time += this.dt;
 
@@ -751,13 +758,14 @@
         }
 
         testCollision() {
-          if (this.isExploding) return;
+          if (this.isExploding || this.gameOver) return;
           let distVec = this.rabbit.position.clone();
           distVec.sub(this.carrot.position);
           let l = distVec.length();
           if (l <= 1) {
             this.carrot.visible = false;
             this.explode(this.carrot.position);
+            this.updateScore();
           }
         }
 
@@ -885,8 +893,80 @@
           this.floor.material.vertexShader = vertexShader;
           this.floor.material.fragmentShader = fragmentShader;
         }
-      }
+        createUIElements() {
+        this.countdownElement = document.createElement('div');
+        this.countdownElement.style.position = 'absolute';
+        this.countdownElement.style.top = '10px';
+        this.countdownElement.style.left = '10px';
+        this.countdownElement.style.color = 'white';
+        this.countdownElement.style.fontSize = '24px';
+        document.body.appendChild(this.countdownElement);
 
+        this.scoreElement = document.createElement('div');
+        this.scoreElement.style.position = 'absolute';
+        this.scoreElement.style.top = '10px';
+        this.scoreElement.style.right = '10px';
+        this.scoreElement.style.color = 'white';
+        this.scoreElement.style.fontSize = '24px';
+        document.body.appendChild(this.scoreElement);
+
+        this.restartButton = document.createElement('button');
+        this.restartButton.textContent = '重新开始';
+        this.restartButton.style.position = 'absolute';
+        this.restartButton.style.bottom = '10px';
+        this.restartButton.style.left = '50%';
+        this.restartButton.style.transform = 'translateX(-50%)';
+        this.restartButton.style.display = 'none';
+        this.restartButton.addEventListener('click', () => this.restartGame());
+        document.body.appendChild(this.restartButton);
+        }
+
+        startCountdown() {
+        this.countdownTime = 60;
+        const countdownInterval = setInterval(() => {
+            this.countdownTime--;
+            this.countdownElement.textContent = `时间: ${this.countdownTime}`;
+            
+            if (this.countdownTime <= 0) {
+            clearInterval(countdownInterval);
+            this.endGame();
+            }
+        }, 1000);
+        }
+
+        endGame() {
+        this.gameOver = true;
+        alert(`游戏结束! 您的得分是: ${this.score}`);
+        this.restartButton.style.display = 'block';
+        }
+
+        restartGame() {
+        this.gameOver = false;
+        this.score = 0;
+        this.updateScore();
+        this.restartButton.style.display = 'none';
+        this.resetGameState();
+        this.startCountdown();
+        }
+
+        resetGameState() {
+        this.rabbit.position.set(0, 0, 0);
+        this.spawnCarrot();
+        this.heroSpeed.set(0, 0);
+        this.heroAcc.set(0, 0);
+        this.isJumping = false;
+        this.isLanding = false;
+        this.jumpParams.jumpProgress = 0;
+        this.jumpParams.landProgress = 0;
+        }
+
+        updateScore() {
+        this.score++;
+        this.scoreElement.textContent = `得分: ${this.score}`;
+        }
+          }
+
+      
       class BufferSim {
         constructor(renderer, width, height, shader) {
           this.renderer = renderer;
